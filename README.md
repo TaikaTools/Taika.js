@@ -17,3 +17,19 @@ $el('div', { class: 'card', style: { padding: '2rem' } })
     .button({ disabled: true }, 'Disabled')
   )
   .insert('body');
+```
+
+Or 'prototype' style:
+```
+const div = new Element('div', { class: 'card', style: { padding: '2rem' } });
+const header = new Element('div', { class: 'header' }).insert(div);
+new Element('h1', {text: 'Welcome to Taika'}).insert(header);
+new Element('p', {text:'Light as a haiku, powerful as a saga.'}).insert(header);
+  
+const button = new Element('button').insert(div)
+button.addEvent( 'click', function (e) {
+  e.stopPropagation();
+  alert('Clicked!');
+});
+  .insert('body');
+
