@@ -31,5 +31,6 @@ button.addEvent( 'click', function (e) {
   e.stopPropagation();
   alert('Clicked!');
 });
-  .insert('body');
+
+div.insert('body');
 
