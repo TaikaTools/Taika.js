@@ -20,7 +20,7 @@ $el('div', { class: 'card', style: { padding: '2rem' } })
 ```
 
 Or 'prototype' style:
-```
+```js
 const div = new Element('div', { class: 'card', style: { padding: '2rem' } });
 const header = new Element('div', { class: 'header' }).insert(div);
 new Element('h1', {text: 'Welcome to Taika'}).insert(header);
