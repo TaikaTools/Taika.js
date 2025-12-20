@@ -1,4 +1,4 @@
-# Taika.js — Fluent DOM Poetry
+# Taika.js - Fluent DOM Poetry
 
 **No build. No dependencies. Pure love.**
 
