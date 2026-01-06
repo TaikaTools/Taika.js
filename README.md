@@ -16,21 +16,21 @@ $el('div', { class: 'card', style: { padding: '2rem' } })
     .button({ onClick: () => alert('Clicked!') }, 'Click me')
     .button({ disabled: true }, 'Disabled')
   )
-  .insert('body');
+  .into('body');
 ```
 
 Or 'prototype' style:
 ```js
 const div = new Element('div', { class: 'card', style: { padding: '2rem' } });
-const header = new Element('div', { class: 'header' }).insert(div);
-new Element('h1', {text: 'Welcome to Taika'}).insert(header);
-new Element('p', {text:'Light as a haiku, powerful as a saga.'}).insert(header);
+const header = new Element('div', { class: 'header' }).into(div);
+new Element('h1', {text: 'Welcome to Taika'}).into(header);
+new Element('p', {text:'Light as a haiku, powerful as a saga.'}).into(header);
   
-const button = new Element('button').insert(div)
+const button = new Element('button').into(div)
 button.addEvent( 'click', function (e) {
   e.stopPropagation();
   alert('Clicked!');
 });
 
-div.insert('body');
+div.into('body');
 
