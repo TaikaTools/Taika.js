@@ -16,7 +16,7 @@ $el('div', { class: 'card', style: { padding: '2rem' } })
     .button({ onClick: () => alert('Clicked!') }, 'Click me')
     .button({ disabled: true }, 'Disabled')
   )
-  .into('body');
+  .into(document.body);
 ```
 
 Or 'prototype' style:
@@ -32,5 +32,5 @@ button.addEvent( 'click', function (e) {
   alert('Clicked!');
 });
 
-div.into('body');
+div.into();
 
