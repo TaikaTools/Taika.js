@@ -1,4 +1,4 @@
-/* Taika.js
+/* Taika.js - $x/$el [XL]
  * Fluent DOM poetry — no build, no deps, pure love
  * MIT © Daniel Taika + Grok.v4 2025
  * -------------------------------------------------- */
@@ -6,23 +6,7 @@
 ;(() => {
   'use strict';
 
-  const ready = (fn) => {
-    if (document.readyState !== 'loading') fn();
-    else document.addEventListener('DOMContentLoaded', fn);
-  };
-
   const BOOL_ATTRS = new Set(['checked','selected','disabled','required','autoplay','loop','muted','controls']);
-
-  const $ = (s) => {
-    const el = document.querySelector(s);
-    if (el) {
-      el.clear = () => (el.replaceChildren(), el);
-      el.set = (child) => (el.clear().appendChild(child?.el || child), el);
-    }
-    return el;
-  };
-  window.$ = $;
-  window.$$ = document.querySelectorAll.bind(document);
 
   class Element {
     constructor(tag, opts = {}) {
@@ -91,7 +75,7 @@
       Object.entries(attrs).forEach(([key, handler]) => {
         if (typeof key !== 'string' || !key) return;
         if (key.toLowerCase().startsWith('on')) { // Catching nested, e.g. onClick events
-          const eventName = key.slice(2).toLowerCase(); // "onclick" → "click"
+          const eventName = key.slice(2).toLowerCase(); // "onclick" == "click"
           if (typeof handler === 'function') {
             this.el.addEventListener(eventName, handler);
             this.#addListener(eventName, handler);
@@ -150,7 +134,6 @@
             });
           }
 
-
           if (p === 'apply') {
             return (data, fn) => {
               if (typeof fn !== 'function' || data == null) return receiver;
@@ -175,81 +158,19 @@
               const uniqueKeys = new Set(keys);
 
               if (isPerfectMap && keys.length === uniqueKeys.size) {
-                // → map mode: fn(key, value, i)
+                // map mode: fn(key, value, i)
                 arr.forEach((obj, i) => {
                   const k = keys[i];
                   addAll(fn(k, obj[k], i));
                 });
               } else {
-                // → normal list mode: fn(item, i)
+                // normal list mode: fn(item, i)
                 arr.forEach((item, i) => addAll(fn(item, i)));
               }
 
               return receiver;
             };
           }
-
-          if (p === 'applyOLD') {
-            return (items, fn) => {
-              if (typeof fn !== 'function') return receiver;
-
-              if (items == null || items.length === 0) return;
-
-              let flags = 8;
-              const seenKeys = new Set();
-
-              if (!Array.isArray(items)) {
-                if (typeof items !== 'object' || Object.keys(items).length === 0 ) return console.log(`Expected object or array, got ${typeof items}`);
-                flags |= 1;
-              } else {
-                for (const item of items) {
-                  if (item === null || typeof item !== 'object' || typeof item === 'function') {
-                    flags |= 4;
-                  } else if (Array.isArray(item)) {
-                    flags |= 4;
-                  } else {
-                    flags |= 2;
-
-                    const keys = Object.keys(item);
-                    if (keys.length !== 1) flags &= ~8;
-                    else if ((flags & 8) != 0) {
-                      const key = keys[0];
-                      if (seenKeys.has(key)) flags &= ~8;
-                      seenKeys.add(key);
-                    }
-                  }
-                }
-              }
-
-              const createTemp = () => {
-                const temp = new Element('div');
-                return temp.proxy(); // This proxy has FULL set trap???
-              };
-
-              if ((flags & 2) != 0 && (flags & 4) != 0 ) return console.warn( `Mixed array not allowed, got ${JSON.stringify(item)}`);
-              if ((flags & 1) != 0 || ((flags & 8) != 0 && seenKeys.size === item.length)) {
-                forEachAsMap(items, (value, key) => {
-                  const temp = createTemp(); //WILL CREATE THE BUG
-                  fn.call(temp, key, value, i, items);
-                  el.append(...temp.el.children);
-                });
-              }
-              if ((flags & 2) != 0) {
-                Object.entries(items).forEach(([value, key], i) => {
-                  const temp = createTemp(); //WILL CREATE THE BUG
-                  fn.call(temp, key, value, i, items);
-                  el.append(...temp.el.children);
-                });
-              } else {
-                items.forEach((item, index, array) => {
-                  const temp = createTemp(); //WILL CREATE THE BUG
-                  fn.call(temp, item, index, array); // call on temp (with proxy, not perfect)
-                  el.append(...temp.el.children);
-                });
-              }
-              return receiver;
-            }
-          };
 
           if (typeof p === 'string' && /^on[A-Z]/.test(p)) { // Allow .onClick(fn) in chaining
             return fn => {
@@ -274,7 +195,7 @@
           }
 
           if (typeof p === 'string' && (p === 'body' || p === 'head' || /^[#.]/.test(p))) {
-            return () => t.insert(p === 'body' ? document.body : p === 'head' ? document.head : p);
+            return () => t.into(p === 'body' ? document.body : p === 'head' ? document.head : p);
           }
 
           if (p === 'before' || p === 'after') {
@@ -291,7 +212,7 @@
             return (opts, fn) => {
               const child = new Element(p, typeof opts === 'object' ? opts : {});
               el.appendChild(child.el);
-              if (typeof fn === 'function') fn(child); // If second argument is function → run it on child
+              if (typeof fn === 'function') fn(child); // If second argument is function == run it on child
               else if (typeof opts === 'function') opts(child);
               return receiver;
             };
@@ -301,35 +222,15 @@
 
         set(target, p, value, receiver) {
           const el = t.el;
-          if (p === 'text') {
-            el.textContent = value;
-            return true;
-          }
-          if (p === 'html') {
-            el.innerHTML = value;
-            return true;
-          }          
-          if (p === 'text' && typeof value === 'string') {
-            const current = el.textContent ?? '';
-            if (current && typeof el.textContent === 'string') {
-              el.textContent += value;
-              return true;
-            }
-          }
-          if (p === 'html' && typeof value === 'string') {
-            const template = document.createElement('template');
-            template.innerHTML = value.trim();
-            el.append(...template.content.childNodes);  // childNodes = preserves text nodes too
-            return true;
-          }
           if (p === 'id') { el.id = value; return true; }
           if (p === 'class') { el.className = value; return true; }
+          if (p === 'text') { el.textContent = value; return true; }
+          if (p === 'html') { el.innerHTML = value; return true; }
           if (p === 'style') {
             if (typeof value === 'string') el.style.cssText = value;
             else if (value && typeof value === 'object') Object.assign(el.style, value);
             return true;
           }
-
           if (p === 'data') {
             if (value === null || typeof value !== 'object') {
               for (let key of el.dataset.keys()) el.dataset[key] = '';
@@ -347,13 +248,11 @@
       });
     }
 
-    insert(target = document.body) { // Should we support htmlText?
-      ready(() => {
-        const parent = typeof target === 'string' ? $(target) : target?.el || target;
-        if (parent && !parent.contains(this.el)) {
-          parent.appendChild(this.el);
-        }
-      });
+    into(target = document.body) {
+      const parent = typeof target === 'string' ? $(target) : target?.el || target;
+      if (parent && !parent.contains(this.el)) {
+        parent.appendChild(this.el);
+      }
       return this;
     }
 
@@ -375,6 +274,22 @@
       this.el?.replaceChildren();
       return this;
     }
+
+    set(el, clear = true) {
+      if(clear) this.clear();
+      this.el?.appendChild(el?.el || el);
+    }
+
+    static wrap(domElement) {
+      if (!domElement?.nodeType) return null;
+      if (domElement._taikaWrapper) return domElement._taikaWrapper;
+
+      const wrapper = new Element('div');
+      wrapper.el = domElement;
+      domElement._taikaWrapper = wrapper;
+
+      return wrapper.proxy();   // cry, cry...
+    }
   }
 
   const orig = Node.prototype.appendChild;
@@ -384,8 +299,62 @@
   };
 
   window.Element = Element;
+  window.$ = (s) => {
+    if (!s) return null;
+    const el = s.startsWith('#') || s.startsWith('.') ? document.querySelector(s) : document.getElementById(s);    
+    if (!el) return null;
+    return Element.wrap(el);
+  };
+  window.$$ = (s) => Array.from(document.querySelectorAll(s)).map(Element.wrap);
   window.$el = (t, o) => new Element(t, o);
 
-  ready(() => {
-console.log('%cTaika.js — Fluent DOM Poetry — MIT © Daniel Taika + Grok.v4 2025', 'background:#000;color:#00ff88;font-weight:bold;padding:1rem;font-size:1rem');  });
+  console.log('%cTaika.js — Fluent DOM Poetry — MIT © Daniel Taika + Grok.v4 2025', 'background:#000;color:#00ff88;font-weight:bold;padding:1rem;font-size:1rem'); 
 })();
+
+async function $x(name, options={}) {
+  try {
+    const globalName = `$x${name}`;
+    if (globalThis[globalName]) return globalThis[globalName];    // cached
+
+    await loadResource(`${name}.js`, 'js');
+    const ComponentClass = globalThis[globalName];
+    if (!ComponentClass) {
+      throw new Error(`Class $x${name} not found after loading ${name}.js`);
+    }
+
+    const instance = new ComponentClass(options);    // Create instance
+    if( instance.init ) await instance.init();
+
+    return globalThis[globalName] = instance;
+  } catch (err) {
+    console.error(`Loading $x${name} failed:`, err);
+    throw err;
+  }
+}
+
+// Load a single JS or CSS file and return a Promise
+function loadResource(url, type = 'js') {
+  return new Promise((resolve, reject) => {
+    let element;
+
+    if (type === 'js') {
+      element = document.createElement('script');
+      element.type = 'text/javascript';
+      element.src = 'containers/'+url;
+      element.async = true;
+    } else if (type === 'css') {
+      element = document.createElement('link');
+      element.rel = 'stylesheet';
+      element.type = 'text/css';
+      element.href = 'containers/'+url;
+    } else {
+      reject(new Error('Unsupported type'));
+      return;
+    }
+
+    element.onload = () => resolve(element);    // Success
+    element.onerror = () => reject(new Error(`Failed to load ${url}`));    // Failure
+
+    document.head.appendChild(element);    // Add to head
+  });
+}
